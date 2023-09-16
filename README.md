@@ -1,6 +1,31 @@
-# README
+# This is the solution for using appconfig to build for feature flag feature to support your platform
 
-# What is appconfig for featureflag?
+## Overview about concept
+
+## What is featureflag?
+A feature flag, also known as a feature toggle or feature switch, is a software development technique that allows developers to enable or disable specific features or pieces of functionality in an application or system without changing the code. Feature flags are used for various purposes, including A/B testing, gradual feature rollout, and managing the release of new features.
+
+Here's how feature flags work:
+
+1. **Conditional Control**: Developers insert conditional statements in their code that check the state of a feature flag. If the flag is "on," the associated feature is enabled; if it's "off," the feature remains disabled.
+
+2. **Dynamic Configuration**: Feature flags are often managed externally through a configuration file, a dashboard, or a feature flag management tool. This allows non-developers (such as product managers or operations teams) to control the state of the flags without needing to modify the codebase.
+
+3. **Gradual Rollouts**: Teams can use feature flags to gradually release new features to a subset of users. This helps in monitoring and testing the feature's performance and gathering user feedback before a full-scale release.
+
+4. **A/B Testing**: Feature flags enable A/B testing by toggling a feature on or off for specific user groups. This allows developers to compare how different groups of users react to the presence or absence of a particular feature.
+
+5. **Emergency Rollbacks**: If a new feature causes unexpected issues or bugs, feature flags can be used to quickly disable the feature without having to deploy a new version of the software.
+
+6. **Configuration Driven**: Feature flags promote a configuration-driven approach, separating feature activation from code changes. This is beneficial for continuous integration/continuous deployment (CI/CD) pipelines and allows for quicker and safer feature management.
+
+7. **Analytics and Monitoring**: Feature flags can be integrated with analytics tools to collect data on how users interact with enabled features, helping in decision-making and future feature development.
+
+8. **Security and Compliance**: Feature flags can be used for security and compliance purposes. For instance, a critical security fix can be instantly enabled across all instances by toggling a feature flag.
+
+Overall, feature flags are a powerful tool for modern software development, offering flexibility, control, and agility in managing features and releases while reducing the risk associated with deploying new code.
+
+## What is appconfig for featureflag?
 AWS AppConfig is a service provided by Amazon Web Services (AWS) that helps you manage and deploy application configurations. While it's not specifically designed for feature flags, you can use AWS AppConfig to implement feature flags as part of your application's configuration management.
 
 Here's how AWS AppConfig can be used for feature flags:
@@ -29,21 +54,25 @@ To implement feature flags using AWS AppConfig:
 
 AWS AppConfig provides a centralized and scalable way to manage and control feature flags, making it easier to experiment with different application behaviors and manage feature releases. It can be particularly useful in scenarios where you want to make runtime configuration changes without modifying your application's code or redeploying it.
 
-# Overview about the solution
+##  Overview about the solution
 APIGW(Not yet in the demo) ---->Lambda ---->AppConfig(To get the setting)
 * In this demo, I will not include APIGW however, You can integrate APIGW to Lambda easily.
 
-# Build source code
+
+## How to setup
+### Build source code
 
 1. Ensure GNU Make is installed
 2. To build
     ```make```
 3. Binary is build in the ```bin``` director
 
-# Setting AWS Appconfig
+###  Setting AWS Appconfig
 To create an AWS AppConfig application with the name "demo," an environment named "demo," and a default configuration profile.
 
-## For using AWS Console, following these steps:
+#### For using Terraform, It will be released soon
+
+#### For using AWS Console, following these steps:
 
 Creating an AWS AppConfig configuration by using the AWS Management Console involves several steps. Here's a high-level walkthrough of how you can do it:
 
@@ -90,9 +119,11 @@ Creating an AWS AppConfig configuration by using the AWS Management Console invo
 Please note that these are high-level steps and may vary slightly depending on the AWS Console's current user interface. Ensure that you have the necessary AWS permissions to create and manage AppConfig resources. Also, the Feature Flag's default value is the initial state of the feature when no explicit configuration has been set. You can later update the configuration to change the feature's state.
 
 
-# Create lambda function to get config (The lambda can be trigger by APIGW)
+### Create lambda function to get config
+* The lambda can be trigger by APIGW for production
+* For testing, you can trigger manually
 
-## Create role for lambda function with Default Lambda Role and read appconfig permission
+#### Create role for lambda function with Default Lambda Role and read appconfig permission
 
 To create an AWS Identity and Access Management (IAM) role for a Lambda function with permissions to read AppConfig configurations and assume the default Lambda execution role, you can create a custom IAM role and attach the necessary policies. Here are the steps to create this IAM role:
 
@@ -123,11 +154,11 @@ To create an AWS Identity and Access Management (IAM) role for a Lambda function
 
 2. **Attach AWS Managed Policies**:
 
-   To grant the role the necessary permissions to read AppConfig configurations, you can attach the `AWSAppConfig_ReadOnlyAccess` AWS managed policy. Additionally, you can attach the default AWS managed policy for Lambda, which is `AWSLambda_FullAccess` to provide basic Lambda execution permissions. You can do this using the AWS CLI as follows:
+To grant the role the necessary permissions to read AppConfig configurations, you can attach the `AWSAppConfig_ReadOnlyAccess` AWS managed policy. Additionally, you can attach the default AWS managed policy for Lambda, which is `AWSLambda_FullAccess` to provide basic Lambda execution permissions. You can do this using the AWS CLI as follows:
 
    ```bash
 
-   ACCOUNT_ID=813995029960
+   ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 
    aws iam create-policy \
      --policy-name AWSAppConfig_ReadOnlyAccess \
@@ -155,7 +186,7 @@ To create an AWS Identity and Access Management (IAM) role for a Lambda function
      --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
    ```
 
-   This attaches both policies to the custom role. The `AWSAppConfig_ReadOnlyAccess` policy grants read-only access to AppConfig, and `AWSLambdaBasicExecutionRole` provides basic Lambda permissions.
+This attaches both policies to the custom role. The `AWSAppConfig_ReadOnlyAccess` policy grants read-only access to AppConfig, and `AWSLambdaBasicExecutionRole` provides basic Lambda permissions. You can check again the attachment policies
 
 ```bash
 aws iam list-attached-role-policies --role-name LambdaAppConfigRole
@@ -171,9 +202,9 @@ To create an AWS Lambda function with the name "lambda-appconfig-go" and upload 
 
 **Note:** Before proceeding, ensure that you have the AWS CLI installed and configured with the necessary AWS credentials.
 
-## **Create the Lambda Function**:
+#### **Create the Lambda Function**:
 
-   Use the AWS CLI to create the Lambda function. Replace `your-role-arn` with the ARN of the IAM role that your Lambda function should assume.
+   Use the AWS CLI to create the Lambda function. 
 
    ```bash
    aws lambda create-function \
@@ -195,8 +226,9 @@ To create an AWS Lambda function with the name "lambda-appconfig-go" and upload 
 
 2. **Configure Lambda Environment Variables**:
 
+If your Lambda function requires environment variables, you can configure them using the AWS CLI. Replace `key1=value1 key2=value2` with your environment variables. In my case, i am using region ap-southeast-1
 
-   If your Lambda function requires environment variables, you can configure them using the AWS CLI. Replace `key1=value1 key2=value2` with your environment variables. In my case, i am using region ap-southeast-1
+**You have to add layer that is supported to call appconfig like localhost** to get the the setting of appconfig
 
    ```bash
    aws lambda update-function-configuration \
@@ -205,12 +237,18 @@ To create an AWS Lambda function with the name "lambda-appconfig-go" and upload 
      --layers "arn:aws:lambda:ap-southeast-1:421114256042:layer:AWS-AppConfig-Extension:91" \
      --environment Variables="{ENV=demo,project=demo}"
 
-   aws lambda update-function-code \
-      --function-name lambda-appconfig-go \
-      --zip-file fileb://bin/appconfig_demo.zip
    ```
 
-3. **Invoke the Lambda Function** (Optional):
+Incase, you want to upgrade lambda with new code changing
+
+   ```bash
+      aws lambda update-function-code \
+         --function-name lambda-appconfig-go \
+         --zip-file fileb://bin/appconfig_demo.zip
+   ```
+
+
+3. **Invoke the Lambda Function** (For testing):
 
    You can test your Lambda function using the AWS CLI as follows:
 
@@ -228,11 +266,11 @@ To create an AWS Lambda function with the name "lambda-appconfig-go" and upload 
 That's it! You have created an AWS Lambda function named "lambda-appconfig-go" and uploaded the Lambda package from the "appconfig_demo.zip" file. Remember to replace placeholders with your specific details, such as the IAM role ARN, handler function, and environment variables, as needed.
 
 
-# Todo later
+## Todo later
 * Fully setup to integrate with CI, CD to make full workflow
 * Using Terraform to build the whole resource.
 
-# Reference 
+## References
 * [Offical Document from AWS for lambda Integration with AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html)
 
 
