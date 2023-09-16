@@ -228,7 +228,7 @@ To create an AWS Lambda function with the name "lambda-appconfig-go" and upload 
 
 If your Lambda function requires environment variables, you can configure them using the AWS CLI. Replace `key1=value1 key2=value2` with your environment variables. In my case, i am using region ap-southeast-1
 
-**You have to add layer that is supported to call appconfig like localhost** to get the the setting of appconfig
+**You have to add layer that is supported to call appconfig like localhost** to get the the setting of appconfig. The account number will be different on each Region - [You can check here](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html).
 
    ```bash
    aws lambda update-function-configuration \
@@ -265,6 +265,32 @@ Incase, you want to upgrade lambda with new code changing
 
 That's it! You have created an AWS Lambda function named "lambda-appconfig-go" and uploaded the Lambda package from the "appconfig_demo.zip" file. Remember to replace placeholders with your specific details, such as the IAM role ARN, handler function, and environment variables, as needed.
 
+### Remove resource after testing
+
+#### AWS Lambda and AWS Logs
+```bash
+   aws lambda delete-function --function-name lambda-appconfig-go
+   aws logs delete-log-group --log-group-name /aws/lambda/lambda-appconfig-go
+```
+
+#### AWS AppConfig (Delete appconfig profile manually on AWS console)
+  - Delete environment demo
+  - Delete profile (delete all version first)
+  - delete appconfig
+
+####  Delete Role
+
+```bash
+   aws iam list-attached-role-policies --role-name LambdaAppConfigRole
+   aws iam detach-role-policy --role-name LambdaAppConfigRole --policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/AWSAppConfig_ReadOnlyAccess
+
+   aws iam detach-role-policy --role-name LambdaAppConfigRole --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+   aws iam delete-role --role-name LambdaAppConfigRole
+
+   aws iam delete-policy --policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/AWSAppConfig_ReadOnlyAccess
+```
+
 
 ## Todo later
 * Fully setup to integrate with CI, CD to make full workflow
@@ -272,5 +298,6 @@ That's it! You have created an AWS Lambda function named "lambda-appconfig-go" a
 
 ## References
 * [Offical Document from AWS for lambda Integration with AppConfig](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html)
+* [Available versions of the AWS AppConfig Lambda extension](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html)
 
 
